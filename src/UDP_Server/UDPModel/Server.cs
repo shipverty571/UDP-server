@@ -12,9 +12,13 @@ namespace UDPModel
     {
         private const int Port = 8888;
 
+        private const int GetMetricsTimeout = 5000;
+
         private UdpClient _server;
 
         private Thread _receiveMessagesThread;
+
+        private Thread _getMetricsThread;
 
         public Action<string> OnInformation;
 
@@ -24,6 +28,7 @@ namespace UDPModel
         {
             _server = new UdpClient(Port);
             _receiveMessagesThread = new Thread(ReceiveMessages);
+            _getMetricsThread = new Thread(GetMetrics);
 
             _repository = new MetricRepository();
         }
@@ -34,6 +39,7 @@ namespace UDPModel
         {
             IsRunning = true;
             _receiveMessagesThread.Start();
+            _getMetricsThread.Start();
         }
 
         public void Stop()
@@ -41,6 +47,7 @@ namespace UDPModel
             IsRunning = false;
             _server.Close();
             _receiveMessagesThread.Join();
+            _getMetricsThread.Join();
         }
 
         private void ReceiveMessages()
@@ -60,8 +67,6 @@ namespace UDPModel
                     {
                         var metric = MetricParser.Parse(message);
                         _repository.Add(metric.Name, metric.Value);
-
-                        OnInformation?.Invoke(_repository.GetAll());
                     }
                 }
             }
@@ -84,6 +89,17 @@ namespace UDPModel
                 OnInformation?.Invoke(exception.Message);
 
                 return false;
+            }
+        }
+
+        private void GetMetrics()
+        {
+            while (IsRunning)
+            {
+                Thread.Sleep(GetMetricsTimeout);
+
+                var metrics = _repository.GetAll();
+                OnInformation?.Invoke(metrics);
             }
         }
     }
