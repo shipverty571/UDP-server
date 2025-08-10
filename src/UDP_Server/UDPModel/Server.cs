@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using UDPModel.Exceptions;
+using UDPModel.Repositories;
 
 namespace UDPModel
 {
@@ -17,10 +18,14 @@ namespace UDPModel
 
         public Action<string> OnInformation;
 
+        private MetricRepository _repository;
+
         public Server()
         {
             _server = new UdpClient(Port);
             _receiveMessagesThread = new Thread(ReceiveMessages);
+
+            _repository = new MetricRepository();
         }
 
         public bool IsRunning { get; private set; }
@@ -48,7 +53,16 @@ namespace UDPModel
                 {
                     var data = _server.Receive(ref sender);
                     var message = Encoding.UTF8.GetString(data);
-                    IsValidMessage(message);
+
+                    // возможно придется вынести в отдельный метод
+                    var isValidMessage = IsValidMessage(message);
+                    if (isValidMessage)
+                    {
+                        var metric = MetricParser.Parse(message);
+                        _repository.Add(metric.Name, metric.Value);
+
+                        OnInformation?.Invoke(_repository.GetAll());
+                    }
                 }
             }
 
@@ -57,15 +71,19 @@ namespace UDPModel
             catch (ObjectDisposedException) { }
         }
 
-        private void IsValidMessage(string message)
+        private bool IsValidMessage(string message)
         {
             try
             {
                 MessageValidator.IsValidMessage(message);
+
+                return true;
             }
             catch (NotValidMessageException exception)
             {
                 OnInformation?.Invoke(exception.Message);
+
+                return false;
             }
         }
     }
