@@ -39,6 +39,8 @@
         <Reference Include="System.Xml"/>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Exceptions\NotValidMessageException.cs" />
+        <Compile Include="MessageValidator.cs" />
         <Compile Include="Server.cs" />
         <Compile Include="Properties\AssemblyInfo.cs"/>
     </ItemGroup>

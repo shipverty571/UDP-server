@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using UDPModel.Exceptions;
 
 namespace UDPModel
 {
@@ -13,6 +14,8 @@ namespace UDPModel
         private UdpClient _server;
 
         private Thread _receiveMessagesThread;
+
+        public Action<string> OnInformation;
 
         public Server()
         {
@@ -43,17 +46,27 @@ namespace UDPModel
             {
                 while (IsRunning)
                 {
-                    byte[] data = _server.Receive(ref sender);
-                    // Уйдет в класс-обработчик ввода
-                    string message = Encoding.UTF8.GetString(data);
-
-                    Console.WriteLine($"\n[{sender}] {message}");
+                    var data = _server.Receive(ref sender);
+                    var message = Encoding.UTF8.GetString(data);
+                    IsValidMessage(message);
                 }
             }
 
             // Подумать
             catch (SocketException) { }
             catch (ObjectDisposedException) { }
+        }
+
+        private void IsValidMessage(string message)
+        {
+            try
+            {
+                MessageValidator.IsValidMessage(message);
+            }
+            catch (NotValidMessageException exception)
+            {
+                OnInformation?.Invoke(exception.Message);
+            }
         }
     }
 }
