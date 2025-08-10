@@ -1,80 +1,27 @@
 ﻿using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading;
+using UDPModel;
 
 namespace UDP_Server
 {
     internal class Program
     {
-        private const int Port = 8888;
-
-        private static bool _isRunning;
-
-        private static UdpClient _server;
-
-        private static Thread _receiveMessagesThread;
-
-        public Program()
-        {
-            _receiveMessagesThread = new Thread(ReceiveMessages);
-        }
+        private static Server _server = new Server();
 
         public static void Main(string[] args)
         {
-            StartServer();
+            _server.Start();
 
             // в основном потоке слушаем ввод - если enter нажали, то все вырубаем
-            while (_isRunning)
+            while (_server.IsRunning)
             {
                 string message = Console.ReadLine();
 
                 if (string.IsNullOrEmpty(message))
                 {
-                    StopServer();
+                    _server.Stop();
                     break;
                 }
             }
-        }
-
-        private static void ReceiveMessages()
-        {
-            IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-
-            try
-            {
-                while (_isRunning)
-                {
-                    byte[] data = _server.Receive(ref sender);
-                    // Уйдет в класс-обработчик ввода
-                    string message = Encoding.UTF8.GetString(data);
-
-                    Console.WriteLine($"\n[{sender}] {message}");
-                }
-            }
-
-            // Подумать
-            catch (SocketException) { }
-            catch (ObjectDisposedException) { }
-        }
-
-        private static void StartServer()
-        {
-            _server = new UdpClient(Port);
-            _isRunning = true;
-
-            // создаем и запускаем прослушку в отдельном потоке
-            _receiveMessagesThread.Start();
-
-            // дожидаеся завершения потока
-            _receiveMessagesThread.Join();
-        }
-
-        private static void StopServer()
-        {
-            _isRunning = false;
-            _server.Close();
         }
     }
 }
