@@ -16,6 +16,7 @@ namespace UDP_Server
         public static void Main(string[] args)
         {
             _server.Start();
+            Console.WriteLine("Сервер запущен");
 
             // в основном потоке слушаем ввод - если enter нажали, то все вырубаем
             while (_server.IsRunning)
@@ -24,10 +25,13 @@ namespace UDP_Server
 
                 if (string.IsNullOrEmpty(message))
                 {
+                    Console.WriteLine("Остановка сервера...");
                     _server.Stop();
                     break;
                 }
             }
+
+            Console.WriteLine("Сервер остановлен");
         }
     }
 }
