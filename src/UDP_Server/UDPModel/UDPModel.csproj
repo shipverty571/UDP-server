@@ -41,6 +41,8 @@
     <ItemGroup>
         <Compile Include="Exceptions\NotValidMessageException.cs" />
         <Compile Include="MessageValidator.cs" />
+        <Compile Include="MetricParser.cs" />
+        <Compile Include="Repositories\MetricRepository.cs" />
         <Compile Include="Server.cs" />
         <Compile Include="Properties\AssemblyInfo.cs"/>
     </ItemGroup>
