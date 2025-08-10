@@ -21,8 +21,8 @@ jobs:
       with:
         dotnet-version: 8.x
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore src/UDP_Server
     - name: Build
-      run: dotnet build --no-restore
-    - name: UDP_Server
-      run: dotnet /src/UDP_Server --no-build --verbosity normal
+      run: dotnet build src/UDP_Server --no-restore
+    - name: Test
+      run: dotnet test src/UDP_Server --no-build --verbosity normal
