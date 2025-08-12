@@ -7,6 +7,10 @@ namespace UDPModel.Utilities
     {
         public static (string Name, float Value) Parse(string metric)
         {
+            if (metric == null)
+            {
+                throw new ArgumentNullException(nameof(metric));
+            }
             var parts = metric.Split(':');
 
             if (parts.Length != 2)
