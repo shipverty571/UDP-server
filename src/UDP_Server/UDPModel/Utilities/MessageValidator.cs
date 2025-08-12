@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
-using UDPModel.Exceptions;
 
 namespace UDPModel.Utilities
 {
@@ -17,18 +16,20 @@ namespace UDPModel.Utilities
         /// </summary>
         private const string MessageFormatRegex = @"^[^\s:]+:\-?\d+(\.\d+)?$";
 
-        public static void IsValidMessage(string message)
+        public static bool IsValidMessage(string message)
         {
-            var utf8Message = Encoding.UTF8.GetBytes(message);
-            if (utf8Message.Length > MaxBytes)
+            var messageLength = Encoding.UTF8.GetBytes(message).Length;
+            if (messageLength > MaxBytes)
             {
-                throw new NotValidMessageException(message);
+                return false;
             }
 
             if (!Regex.IsMatch(message, MessageFormatRegex))
             {
-                throw new NotValidMessageException(message);
+                return false;
             }
+
+            return true;
         }
     }
 }
