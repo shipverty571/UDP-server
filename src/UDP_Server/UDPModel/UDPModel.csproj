@@ -40,11 +40,11 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Exceptions\NotValidMessageException.cs" />
-        <Compile Include="MessageValidator.cs" />
-        <Compile Include="MetricParser.cs" />
         <Compile Include="Repositories\MetricRepository.cs" />
         <Compile Include="Server.cs" />
         <Compile Include="Properties\AssemblyInfo.cs"/>
+        <Compile Include="Utilities\MessageValidator.cs" />
+        <Compile Include="Utilities\MetricParser.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
