@@ -20,9 +20,9 @@ namespace UDPModel
 
         private Thread _getMetricsThread;
 
-        public Action<string> OnInformation;
-
         private MetricRepository _repository;
+
+        public Action<string> OnInformation;
 
         public Server()
         {
@@ -72,8 +72,14 @@ namespace UDPModel
             }
 
             // Подумать
-            catch (SocketException) { }
-            catch (ObjectDisposedException) { }
+            catch (SocketException socketException)
+            {
+                OnInformation?.Invoke($"Ошибка:{socketException}");
+            }
+            catch (ObjectDisposedException objectDisposedException)
+            {
+                OnInformation?.Invoke($"Ошибка:{objectDisposedException}");
+            }
         }
 
         private bool IsValidMessage(string message)
