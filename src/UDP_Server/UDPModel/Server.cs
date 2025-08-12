@@ -5,13 +5,12 @@ using System.Text;
 using System.Threading;
 using UDPModel.Exceptions;
 using UDPModel.Repositories;
+using UDPModel.Utilities;
 
 namespace UDPModel
 {
     public class Server
     {
-        private const int Port = 8888;
-
         private const int GetMetricsTimeout = 5000;
 
         private UdpClient _server;
@@ -24,9 +23,9 @@ namespace UDPModel
 
         public Action<string> OnInformation;
 
-        public Server()
+        public Server(int port)
         {
-            _server = new UdpClient(Port);
+            _server = new UdpClient(port);
             _receiveMessagesThread = new Thread(ReceiveMessages);
             _getMetricsThread = new Thread(GetMetrics);
 
@@ -61,7 +60,6 @@ namespace UDPModel
                     var data = _server.Receive(ref sender);
                     var message = Encoding.UTF8.GetString(data);
 
-                    // возможно придется вынести в отдельный метод
                     var isValidMessage = IsValidMessage(message);
                     if (isValidMessage)
                     {
@@ -71,7 +69,6 @@ namespace UDPModel
                 }
             }
 
-            // Подумать
             catch (SocketException socketException)
             {
                 OnInformation?.Invoke($"Ошибка:{socketException}");
