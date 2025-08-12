@@ -27,7 +27,7 @@ namespace UDPModel.Utilities
                 throw new FormatException("Значение метрики не может быть пустым");
             }
 
-            if (float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float parsedValue))
+            if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float parsedValue))
             {
                 return (name, parsedValue);
             }
