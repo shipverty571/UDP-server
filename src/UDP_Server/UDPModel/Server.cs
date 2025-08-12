@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using UDPModel.Exceptions;
 using UDPModel.Repositories;
 using UDPModel.Utilities;
 
@@ -61,11 +60,15 @@ namespace UDPModel
                     var data = _server.Receive(ref sender);
                     var message = Encoding.UTF8.GetString(data);
 
-                    var isValidMessage = IsValidMessage(message);
+                    var isValidMessage = MessageValidator.IsValidMessage(message);
                     if (isValidMessage)
                     {
                         var metric = MetricParser.Parse(message);
                         _repository.Add(metric.Name, metric.Value);
+                    }
+                    else
+                    {
+                        OnInformation?.Invoke($"Ошибка формата: {message}");
                     }
                 }
                 catch (SocketException socketExceptionTimeout) when
@@ -81,25 +84,13 @@ namespace UDPModel
                 {
                     OnInformation?.Invoke($"Ошибка:{objectDisposedException}");
                 }
+                catch (FormatException formatException)
+                {
+                    OnInformation?.Invoke($"Ошибка:{formatException}");
+                }
             }
 
             _server.Close();
-        }
-
-        private bool IsValidMessage(string message)
-        {
-            try
-            {
-                MessageValidator.IsValidMessage(message);
-
-                return true;
-            }
-            catch (NotValidMessageException exception)
-            {
-                OnInformation?.Invoke(exception.Message);
-
-                return false;
-            }
         }
 
         private void GetMetrics()

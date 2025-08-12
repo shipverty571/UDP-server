@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 
 namespace UDPModel.Utilities
 {
@@ -8,7 +9,32 @@ namespace UDPModel.Utilities
         {
             var parts = metric.Split(':');
 
-            return (parts[0], float.Parse(parts[1], CultureInfo.InvariantCulture));
+            if (parts.Length != 2)
+            {
+                throw new FormatException("Некорректный формат метрики");
+            }
+
+            var name = parts[0];
+            var value = parts[1];
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new FormatException("Имя метрики не может быть пустым");
+            }
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new FormatException("Значение метрики не может быть пустым");
+            }
+
+            if (float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float parsedValue))
+            {
+                return (name, parsedValue);
+            }
+            else
+            {
+                throw new FormatException("Значение не может быть преобразовано из строки в число");
+            }
         }
     }
 }
