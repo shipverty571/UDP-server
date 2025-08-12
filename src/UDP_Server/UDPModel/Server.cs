@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -26,6 +27,7 @@ namespace UDPModel
         public Server(int port)
         {
             _server = new UdpClient(port);
+            _server.Client.ReceiveTimeout = 1000;
             _receiveMessagesThread = new Thread(ReceiveMessages);
             _getMetricsThread = new Thread(GetMetrics);
 
@@ -44,7 +46,6 @@ namespace UDPModel
         public void Stop()
         {
             IsRunning = false;
-            _server.Close();
             _receiveMessagesThread.Join();
             _getMetricsThread.Join();
         }
@@ -53,9 +54,9 @@ namespace UDPModel
         {
             IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
 
-            try
+            while (IsRunning)
             {
-                while (IsRunning)
+                try
                 {
                     var data = _server.Receive(ref sender);
                     var message = Encoding.UTF8.GetString(data);
@@ -67,16 +68,22 @@ namespace UDPModel
                         _repository.Add(metric.Name, metric.Value);
                     }
                 }
+                catch (SocketException socketExceptionTimeout) when
+                    (socketExceptionTimeout.SocketErrorCode == SocketError.TimedOut)
+                {
+                    // Если нет данных за 1 секунду, то флаг проверяется и работа продолжается
+                }
+                catch (SocketException socketException)
+                {
+                    OnInformation?.Invoke($"Ошибка:{socketException}");
+                }
+                catch (ObjectDisposedException objectDisposedException)
+                {
+                    OnInformation?.Invoke($"Ошибка:{objectDisposedException}");
+                }
             }
 
-            catch (SocketException socketException)
-            {
-                OnInformation?.Invoke($"Ошибка:{socketException}");
-            }
-            catch (ObjectDisposedException objectDisposedException)
-            {
-                OnInformation?.Invoke($"Ошибка:{objectDisposedException}");
-            }
+            _server.Close();
         }
 
         private bool IsValidMessage(string message)
@@ -102,7 +109,19 @@ namespace UDPModel
                 Thread.Sleep(GetMetricsTimeout);
 
                 var metrics = _repository.GetAll();
-                OnInformation?.Invoke(metrics);
+                var text = string.Empty;
+                if (metrics.Count == 0)
+                {
+                    text = "[METRIC] Нет данных";
+                }
+                else
+                {
+                    text =
+                        "[METRIC] " +
+                        string.Join(" | ", metrics.Select(kv => $"{kv.Key} = {kv.Value}"));
+                }
+
+                OnInformation?.Invoke(text);
             }
         }
     }

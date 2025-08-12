@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace UDPModel.Repositories
 {
@@ -7,27 +6,29 @@ namespace UDPModel.Repositories
     {
         private Dictionary<string, float> _metrics = new Dictionary<string, float>();
 
+        private object _sync = new object();
+
         public void Add(string name, float value)
         {
-            if (_metrics.ContainsKey(name))
+            lock (_sync)
             {
-                Update(name, value);
-            }
-            else
-            {
-                _metrics.Add(name, value);
+                if (_metrics.ContainsKey(name))
+                {
+                    Update(name, value);
+                }
+                else
+                {
+                    _metrics.Add(name, value);
+                }
             }
         }
 
-        public string GetAll()
+        public Dictionary<string, float> GetAll()
         {
-            if (_metrics.Count == 0)
+            lock (_sync)
             {
-                return "[METRIC] Нет данных";
+                return new Dictionary<string, float>(_metrics);
             }
-
-            var text = string.Join(" | ", _metrics.Select(kv => $"{kv.Key} = {kv.Value}"));
-            return "[METRIC] " + text;
         }
 
         private void Update(string name, float value)
