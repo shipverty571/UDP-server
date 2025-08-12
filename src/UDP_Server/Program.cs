@@ -5,11 +5,13 @@ namespace UDP_Server
 {
     internal class Program
     {
+        private const int Port = 8888;
+
         private static Server _server;
 
         static Program()
         {
-            _server = new Server();
+            _server = new Server(Port);
             _server.OnInformation = Console.WriteLine;
         }
 

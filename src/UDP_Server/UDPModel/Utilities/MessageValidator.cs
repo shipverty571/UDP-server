@@ -1,9 +1,8 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
 using UDPModel.Exceptions;
 
-namespace UDPModel
+namespace UDPModel.Utilities
 {
     public static class MessageValidator
     {

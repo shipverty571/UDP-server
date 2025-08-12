@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace UDPModel
+namespace UDPModel.Utilities
 {
     public static class MetricParser
     {
